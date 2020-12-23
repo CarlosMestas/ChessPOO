@@ -1,137 +1,144 @@
 #include "Tablero.h"
+#include "Casilla.h"
 #include "Game.h"
-#include "Peon.h"
-#include "Caballo.h"
 #include "Dama.h"
-#include "Rey.h"
 #include "Torre.h"
+#include "Peon.h"
+#include "Rey.h"
+#include "Caballo.h"
 #include "Alfil.h"
-extern Game* game;
+extern Game *game;
 Tablero::Tablero()
 {
     ArmarBlancas();
     ArmarNegras();
 }
-
-void Tablero::DibujarCasillas(int x, int y)
+void Tablero::DibujarCasillas(int x,int y)
 {
-    //Distancia de una casilla y otra, cada casilla es de 100x100
-    int DistanciaCasilla=100;
-    for(int i=0; i<8; ++i){
-        for(int j=0; j<8; ++j){
-           Casilla* casillas = new Casilla();
+    int SHIFT = 100;
+    for(int i = 0; i < 8; i++) {
+        for(int j = 0; j < 8; j++)
+        {
+            Casilla *box = new Casilla();
+            game->collection[i][j] = box;
+            box->rowLoc = i;
+            box->colLoc = j;
+            box->setPos(x+SHIFT*j,y+SHIFT*i);
+            if((i+j)%2==0)
+                box->setOriginalColor("#ffe0b9");
+            else
+                box->setOriginalColor("#d77c47");
+            game->AgregarItem(box);
 
-           game->ColeccionCasillas[i][j]=casillas;
-
-           casillas->Fila=i;
-           casillas->Columna=j;
-
-           casillas->setPos(x+DistanciaCasilla*j,y+DistanciaCasilla*i);
-
-           if((i+j)%2==0)
-               casillas->SetColor(Qt::white);
-           else
-               casillas->SetColor("#6666ff");
-           //Agregando a la escena
-           game->AgregarItem(casillas);
         }
     }
-}
-
-void Tablero::ArmarBlancas()
-{
-    Pieza* pieza;
-    //Agregar peones
-    for(int i=0;i<8;++i){
-        pieza= new Peon("blancas");
-        blancas.append(pieza);
-    }
-    //Agregar torre
-    pieza = new Torre("blancas");
-    blancas.append(pieza);
-    //Agregar caballo
-    pieza = new Caballo("blancas");
-    blancas.append(pieza);
-    //Agregar alfil
-    pieza = new Alfil("blancas");
-    blancas.append(pieza);
-    //Agregar Dama
-    pieza = new Dama("blancas");
-    blancas.append(pieza);
-    //Agregar Rey
-    pieza = new Rey("blancas");
-    blancas.append(pieza);
-    //Agregar alfil
-    pieza = new Alfil("blancas");
-    blancas.append(pieza);
-    //Agregar caballo
-    pieza = new Caballo("blancas");
-    blancas.append(pieza);
-    //Agregar torre
-    pieza = new Torre("blancas");
-    blancas.append(pieza);
 
 }
 
-void Tablero::ArmarNegras()
-{
-    Pieza* pieza;
 
-    //Agregar torre
-    pieza = new Torre("negras");
-    negras.append(pieza);
-    //Agregar caballo
-    pieza = new Caballo("negras");
-    negras.append(pieza);
-    //Agregar alfil
-    pieza = new Alfil("negras");
-    negras.append(pieza);
-    //Agregar Dama
-    pieza = new Dama("negras");
-    negras.append(pieza);
-    //Agregar Rey
-    pieza = new Rey("negras");
-    negras.append(pieza);
-    //Agregar alfil
-    pieza = new Alfil("negras");
-    negras.append(pieza);
-    //Agregar caballo
-    pieza = new Caballo("negras");
-    negras.append(pieza);
-    //Agregar torre
-    pieza = new Torre("negras");
-    negras.append(pieza);
-
-    //Agregar peones
-    for(int i=0;i<8;++i){
-        pieza= new Peon("negras");
-        negras.append(pieza);
-    }
-}
-
-void Tablero::AgregarPiezas()
-{
+void Tablero::addPieza() {
     for(int i = 0; i < 8; i++) {
         for(int j = 0; j < 8; j++)
         {
 
-            Casilla *casillas =game->ColeccionCasillas[i][j];
-            //Colocando piezas negras
+            Casilla *box =game->collection[i][j];
+
             if(i < 2) {
                 static int k;
-                //Modificando la ubicacion de las piezas
-                casillas->setPieza(negras[k]);
-                //Agregando a lista de piezas vivas
-                game->PiezasVivas.append(negras[k]);
-                //Agrando las piezas al escenario
-                game->AgregarItem(negras[k++]);
+                box->placePiece(black[k]);
+
+                game->alivePiece.append(black[k]);
+                game->AgregarItem(black[k++]);
             }
-            //Colocando piezas blancas
+
             if(i > 5) {
                 static int h;
-                casillas->setPieza(blancas[h]);
-                game->PiezasVivas.append(blancas[h]);
-                game->AgregarItem(blancas[h++]);
+                box->placePiece(white[h]);
+                game->alivePiece.append(white[h]);
+                game->AgregarItem(white[h++]);
+            }
+
+        }
+    }
+}
+
+void Tablero::ArmarNegras()
+{
+    Pieza *piece;
+    for(int i = 0; i < 8; i++) {
+        piece = new Peon("WHITE");
+        white.append(piece);
+    }
+    piece = new Torre("WHITE");
+    white.append(piece);
+    piece = new Caballo("WHITE");
+    white.append(piece);
+    piece = new Alfil("WHITE");
+    white.append(piece);
+    piece = new Dama("WHITE");
+    white.append(piece);
+    piece = new Rey("WHITE");
+    white.append(piece);
+    piece = new Alfil("WHITE");
+    white.append(piece);
+    piece = new Caballo("WHITE");
+    white.append(piece);
+    piece = new Torre("WHITE");
+    white.append(piece);
+
+}
+
+void Tablero::ArmarBlancas()
+{
+    Pieza *piece;
+    piece = new Torre("BLACK");
+    black.append(piece);
+    piece = new Caballo("BLACK");
+    black.append(piece);
+    piece = new Alfil("BLACK");
+    black.append(piece);
+    piece = new Dama("BLACK");
+    black.append(piece);
+    piece = new Rey("BLACK");
+    black.append(piece);
+    piece = new Alfil("BLACK");
+    black.append(piece);
+    piece = new Caballo("BLACK");
+    black.append(piece);
+    piece = new Torre("BLACK");
+    black.append(piece);
+    for(int i = 0; i < 8; i++) {
+        piece = new Peon("BLACK");
+        black.append(piece);
+    }
+}
+
+
+void Tablero::reset() {
+    int k = 0; int h = 0;
+    for(int i = 0; i < 8; i++) {
+        for(int j = 0; j < 8; j++)
+        {
+
+            Casilla *box =game->collection[i][j];
+            box->setHasPieza(false);
+            box->setPiezaColor("NONE");
+            box->currentPiece = nullptr;
+            if(i < 2) {
+
+                box->placePiece(black[k]);
+                black[k]->setIsPlaced(true);
+                black[k]->firstMove = true;
+                game->alivePiece.append(black[k++]);
+
+            }
+            if(i > 5) {
+
+                box->placePiece(white[h]);
+                white[h]->setIsPlaced(true);
+                white[h]->firstMove = true;
+                game->alivePiece.append(white[h++]);
+
             }
 
         }

@@ -1,17 +1,14 @@
-#include <iostream>
-#include "Game.h"
-#include <QApplication>
-using namespace std;
 
+#include <QApplication>
+#include "Game.h"
 Game *game;
+
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    game=new Game();
+    game = new Game();
     game->show();
-    game->DibujarTablero();
-    game->DibujarLetrasYNumeros();
 
-
+    game->displayMainMenu();
     return a.exec();
 }

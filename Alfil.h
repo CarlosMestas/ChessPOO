@@ -1,16 +1,21 @@
 #ifndef ALFIL_H
 #define ALFIL_H
+
+
 #include "Pieza.h"
 
-class Alfil : public Pieza
+class Alfil:public Pieza
 {
 public:
-    //Constructor de Pieza
+    //Equipo, item padre
     Alfil(QString team,QGraphicsItem *parent = nullptr);
-    //Agregar imagenes
-    void setImagen();
-    //Agregar movimientos
-    void movimientos();
+
+
+    //Imagen y Movimientos
+    void SetImagen();
+
+    void Movimientos();
+
 };
 
 #endif // ALFIL_H

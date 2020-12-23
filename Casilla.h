@@ -1,46 +1,56 @@
 #ifndef CASILLA_H
 #define CASILLA_H
 
-#include "Pieza.h"
+
 #include <QGraphicsRectItem>
 #include <QBrush>
+#include "Pieza.h"
 #include <QGraphicsSceneMouseEvent>
 
-
 class Pieza;
-class Casilla : public QGraphicsRectItem
+class Casilla:public QGraphicsRectItem
 {
 public:
-    //constructor, item pariente
+
+    //Constructor
     Casilla(QGraphicsItem *parent=nullptr);
     ~Casilla();
 
-    //Poner color
-    void SetColor(QColor color);
-    //Coloca Pieza
-    void setPieza(Pieza* pieza);
 
-    void SetHasPieza(bool valor, Pieza* pieza=nullptr);
-
-
-    //Mouse Press Casilla
+    //public member function
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
+    void setColor(QColor color);
 
-    //Verificar si tiene Pieza
-    bool GetTienePieza();
+    void placePiece(Pieza *piece);
 
-    //Pieza que contiene esta casilla
-    Pieza* PiezaActual;
 
-    //Ubicacion de la casilla
-    int Fila;
-    int Columna;
+    void resetOriginalColor();
+    void setOriginalColor(QColor value);
+
+    bool getHasPieza();
+    void setHasPieza(bool value,Pieza *piece = nullptr);
+
+    void checkForCheck();
+
+    QString getPiezaColor() ;
+    void setPiezaColor(QString value);
+
+
+
+    int rowLoc;
+    int colLoc;
+
+    Pieza * currentPiece;
 
 private:
-    //Para pintar la casilla
-    QBrush pincel;
-    //Verificar contenido de la pieza
-    bool TienePieza;
+
+    QBrush brush;
+    QColor originalColor;
+    bool hasPieza;
+
+    QString PiezaColor;
+
+
 };
 
 #endif // CASILLA_H

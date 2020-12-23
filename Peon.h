@@ -2,14 +2,16 @@
 #define PEON_H
 
 #include "Pieza.h"
-class Peon: public Pieza
+
+class Peon:public Pieza
 {
 public:
     Peon(QString team,QGraphicsItem *parent = nullptr);
-    //Agregar imagenes
-    void setImagen();
-    //Agregar movimientos
-    void movimientos();
-};
+    void SetImagen();
+    void Movimientos();
 
+ private:
+
+
+};
 #endif // PEON_H

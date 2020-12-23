@@ -3,28 +3,27 @@
 
 #include <QGraphicsRectItem>
 #include "Pieza.h"
-
-
-
 class Tablero
 {
 public:
-    //Constructor, item padre
     Tablero();
-    void DibujarCasillas(int x,int y);
 
-    //Añadir al arreglo de piezas
-    void ArmarBlancas();
+    //Dibujar las casillas
+    void DibujarCasillas(int x, int y);
+
+    //Colocar las piezas en el tablero
     void ArmarNegras();
+    void ArmarBlancas();
 
-    //Agrega piezas al tablero
-    void AgregarPiezas();
+    //Agregar piezas
+    void addPieza();
+    void reset();
 private:
+    //Lista de piezas negras y piezas blancas
+    QList <Pieza *> white;
+    QList <Pieza *> black;
 
-    //Piezas
-    QList <Pieza *> blancas;
-    QList <Pieza *> negras;
+
 
 };
-
 #endif // TABLERO_H

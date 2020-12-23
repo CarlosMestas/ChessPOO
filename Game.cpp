@@ -1,41 +1,92 @@
 #include "Game.h"
-
-Game::Game(QWidget *parent):QGraphicsView(parent)
+#include <QPixmap>
+#include "Rey.h"
+#include <QDebug>
+#include <QTimer>
+#include <QDateTime>
+#include <iostream>
+#include "Boton.h"
+#include <QMessageBox>
+Game::Game(QWidget *parent ):QGraphicsView(parent)
 {
-    //Crear escena
+
+    cron = new Tiempo();
+    cron2 = new Tiempo();
+    //MaRey the Scene
     gameScene = new QGraphicsScene();
-    //Tamaño de la escena
-    gameScene->setSceneRect(0,0,1400,850);
-    //Tamaño de la vista
-    this->setFixedSize(1400,850);
-    //Anular scroll vertical y horizontal
-    this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    //Agregar la escena a la vista
-    this->setScene(gameScene);
+    gameScene->setSceneRect(0,0,1400,900);
 
-    PiezaAMover=nullptr;
+    //MaRey the view
+    setFixedSize(1400,900);
+    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    setScene(gameScene);
+
+    pieceToMove = nullptr;
 
 
+    //display Check
+    check = new QGraphicsTextItem();
+    check->setPos(40,400);
+    check->setZValue(4);
+    check->setDefaultTextColor(Qt::red);
+    check->setFont(QFont("",30));
+    check->setPlainText("Jaque");
+    check->setVisible(false);
+    setTurn("WHITE");
 
 
+
+    cronometroblancas = new QGraphicsTextItem();
+    cronometroblancas->setPos(5,300);
+    cronometroblancas->setFont(QFont("",14));
+
+    cronometroblancas->setDefaultTextColor(Qt::black);
+    cronometronegras = new QGraphicsTextItem();
+    cronometronegras->setPos(1134,300);
+    cronometronegras->setFont(QFont("",14));
+
+    cronometronegras->setDefaultTextColor(Qt::black);
+
+    logblancas = new QGraphicsTextItem();
+    logblancas->setPos(5,600);
+    logblancas->setFont(QFont("",14));
+
+    logblancas->setDefaultTextColor(Qt::black);
+
+
+    lognegras = new QGraphicsTextItem();
+    lognegras->setPos(1140,600);
+    lognegras->setFont(QFont("",14));
+
+    lognegras->setDefaultTextColor(Qt::black);
 }
-void Game::DibujarTablero()
-{
-       tablero = new Tablero();
+void Game::cronometro(){
 
-       //Posicion del tablero 300,25
-       tablero->DibujarCasillas(300,25);
-       tablero->AgregarPiezas();
+    if(getTurn()=="WHITE"){
+    cronometroblancas->setPlainText("Cronometro Blancas:\n"+QString::fromStdString(cron->imprimir()));
+    cron->restar();
+    }else{
+        cronometronegras->setPlainText("Cronometro Negras:\n"+QString::fromStdString(cron2->imprimir()));
+        cron2->restar();
+    }
+}
+void Game::drawTablero()
+{
+    chess = new Tablero();
+    drawDeadHolder(0,0,Qt::white);
+    drawDeadHolder(1100,0,Qt::white);
+    DibujarRectangulos(271,25,Qt::white);
+    DibujarRectangulos(1100,25,Qt::white);
+     chess->DibujarCasillas(300,25);
 
 }
 
 void Game::DibujarLetrasYNumeros()
 {
 
-    //int DistanciaCasilla=100;
     QString f[8] = {"A","B","C","D","E","F","G","H"};
-    QString g[8] = {"1","2","3","4","5","6","7","8"};
+    QString g[8] = {"8","7","6","5","4","3","2","1"};
     for(int i=0; i<8; ++i){
 
            QGraphicsTextItem *text = new QGraphicsTextItem();
@@ -76,10 +127,252 @@ void Game::DibujarLetrasYNumeros()
            AgregarItem(text);
 
     }
+
 }
 
-//Agregar items al escenario
+void Game::displayDeadWhite()
+{
+    int SHIFT = 50;
+    int j = 0;
+    int k = 0;
+    for(size_t i = 0,n = static_cast<size_t>(whiteDead.size()); i<n; i++) {
+            if(j == 4){
+                k++;
+                j = 0;
+            }
+            whiteDead[static_cast<int>(i)]->setPos(40+SHIFT*j++,100+SHIFT*2*k);
+    }
+}
+
+void Game::displayDeadBlack()
+{
+    int SHIFT = 50;
+    int j = 0;
+    int k = 0;
+    for(size_t i = 0,n = static_cast<size_t>(blackDead.size()); i<n; i++) {
+        if(j == 4){
+            k++;
+            j = 0;
+        }
+        blackDead[static_cast<int>(i)]->setPos(1140+SHIFT*j++,100+SHIFT*2*k);
+    }
+}
+
+void Game::placeInDeadPlace(Pieza *piece)
+{
+    if(piece->getSide() == "WHITE") {
+        whiteDead.append(piece);
+        Rey *g = dynamic_cast <Rey *>(piece);
+        if(g){
+
+            check->setPlainText("Ganan Negras");
+            gameOver();
+        }
+        displayDeadWhite();
+    }
+    else{
+        blackDead.append(piece);
+        Rey *g = dynamic_cast <Rey *>(piece);
+        if(g){
+
+            check->setPlainText("Ganan Blancas");
+            gameOver();
+        }
+        displayDeadBlack();
+    }
+    alivePiece.removeAll(piece);
+}
+
 void Game::AgregarItem(QGraphicsItem *item)
 {
-    this->gameScene->addItem(item);
+    gameScene->addItem(item);
+}
+
+void Game::removeFromScene(QGraphicsItem *item)
+{
+    gameScene->removeItem(item);
+
+}
+
+QString Game::getTurn()
+{
+    return turn;
+}
+
+void Game::setTurn(QString value)
+{
+    turn = value;
+}
+
+void Game::changeTurn()
+{
+    if(getTurn() == "WHITE")
+        setTurn("BLACK");
+    else
+        setTurn("WHITE");
+
+}
+
+void Game::start()
+{
+    logblancas->setPlainText(logb);
+    lognegras->setPlainText(logn);
+
+    AgregarItem(logblancas);
+    AgregarItem(lognegras);
+
+    for(size_t i =0, n = static_cast<size_t>(listG.size()); i < n; i++)
+        removeFromScene(listG[static_cast<int>(i)]);
+
+    QGraphicsTextItem* whitePiece = new QGraphicsTextItem();
+    whitePiece->setPos(70,10);
+    whitePiece->setZValue(1);
+    whitePiece->setDefaultTextColor(Qt::black);
+    whitePiece->setFont(QFont("",14));
+    whitePiece->setPlainText("PIEZAS BLANCAS");
+    AgregarItem(whitePiece);
+    QGraphicsTextItem *blackPiece = new QGraphicsTextItem();
+
+    blackPiece->setPos(1170,10);
+    blackPiece->setZValue(1);
+    blackPiece->setDefaultTextColor(Qt::black);
+    blackPiece->setFont(QFont("",14));
+    blackPiece->setPlainText("PIEZAS NEGRAS");
+    AgregarItem(blackPiece);
+    AgregarItem(check);
+    chess->addPieza();
+}
+
+void Game::comenzarcronometro()
+{
+
+    cronometroblancas->setPlainText("Cronometro Blancas:\n5:00");
+    cronometronegras->setPlainText("Cronometro Negras:\n5:00");
+
+    logblancas->setPlainText(logb);
+    lognegras->setPlainText(logn);
+
+    AgregarItem(logblancas);
+    AgregarItem(lognegras);
+
+    AgregarItem(cronometroblancas);
+    AgregarItem(cronometronegras);
+
+    for(size_t i =0, n = static_cast<size_t>(listG.size()); i < n; i++)
+        removeFromScene(listG[static_cast<int>(i)]);
+
+    QTimer* fx = new QTimer();
+
+    QObject::connect(fx,SIGNAL(timeout()),this,SLOT(cronometro()));
+    fx->start(1000);
+
+
+    //AgregarItem(turnDisplay);
+    QGraphicsTextItem* whitePiece = new QGraphicsTextItem();
+    whitePiece->setPos(70,10);
+    whitePiece->setZValue(1);
+    whitePiece->setDefaultTextColor(Qt::black);
+    whitePiece->setFont(QFont("",14));
+    whitePiece->setPlainText("PIEZAS BLANCAS");
+    AgregarItem(whitePiece);
+    QGraphicsTextItem *blackPiece = new QGraphicsTextItem();
+
+    blackPiece->setPos(1170,10);
+    blackPiece->setZValue(1);
+    blackPiece->setDefaultTextColor(Qt::black);
+    blackPiece->setFont(QFont("",14));
+    blackPiece->setPlainText("PIEZAS NEGRAS");
+    AgregarItem(blackPiece);
+    AgregarItem(check);
+    chess->addPieza();
+
+}
+
+void Game::drawDeadHolder(int x, int y,QColor color)
+{
+    deadHolder = new QGraphicsRectItem(x,y,300,900);
+
+    QBrush brush;
+    brush.setStyle(Qt::SolidPattern);
+    brush.setColor(color);
+    deadHolder->setBrush(brush);
+    AgregarItem(deadHolder);
+}
+
+void Game::DibujarRectangulos(int x, int y, QColor color)
+{
+    deadHolder = new QGraphicsRectItem(x,y,29,900);
+
+    QBrush brush;
+    brush.setStyle(Qt::SolidPattern);
+    brush.setColor(color);
+    deadHolder->setBrush(brush);
+    AgregarItem(deadHolder);
+}
+
+
+
+void Game::displayMainMenu()
+{
+
+    QGraphicsTextItem *titleText = new QGraphicsTextItem("Ajedrez - TO");
+    QFont titleFont("roboto" , 50);
+    titleText->setFont( titleFont);
+    int xPos = static_cast<int>(width()/2 - titleText->boundingRect().width()/2);
+    int yPos = 150;
+    titleText->setPos(xPos,yPos);
+    AgregarItem(titleText);
+    listG.append(titleText);
+   // create Boton;
+    Boton * playBoton = new Boton("Jugar con Cronometro");
+    int pxPos = static_cast<int>(width()/2 - playBoton->boundingRect().width()/2);
+    int pyPos = 300;
+    playBoton->setPos(pxPos,pyPos);
+    connect(playBoton,SIGNAL(clicked()) , this , SLOT(comenzarcronometro()));
+    AgregarItem(playBoton);
+    listG.append(playBoton);
+
+    //Create Quit Boton;
+    Boton * sincronometro = new Boton("Jugar sin Cronometro");
+    int qxPos = static_cast<int>(width()/2 - sincronometro->boundingRect().width()/2);
+    int qyPos = 375;
+    sincronometro->setPos(qxPos,qyPos);
+    connect(sincronometro, SIGNAL(clicked()),this,SLOT(start()));
+    AgregarItem(sincronometro);
+    drawTablero();
+    DibujarLetrasYNumeros();
+    listG.append(sincronometro);
+}
+
+void Game::gameOver()
+{
+    QMessageBox msgBox;
+    msgBox.setText("Ganas Negras");
+
+    msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard);
+    msgBox.setDefaultButton(QMessageBox::Save);
+    int ret = msgBox.exec();
+
+
+}
+
+void Game::removeAll(){
+    QList<QGraphicsItem*> itemsList = gameScene->items();
+    for(size_t i = 0, n = static_cast<size_t>(itemsList.size());i<n;i++) {
+        if(itemsList[static_cast<int>(i)]!=check)
+          removeFromScene(itemsList[static_cast<int>(i)]);
+    }
+}
+
+QString Game::conversor(QString r, int x, int y,int& c)
+{
+    QString f[8] = {"a","b","c","d","e","f","g","h"};
+    QString g[8] = {"8","7","6","5","4","3","2","1"};
+
+    if(c==5){
+        c=0;
+        return "\n"+r+f[x]+g[y];
+    }
+
+    return r+f[x]+g[y];
 }

@@ -1,16 +1,16 @@
 #ifndef CABALLO_H
 #define CABALLO_H
 
-#include "Pieza.h"
 
-class Caballo: public Pieza
+#include "Pieza.h"
+class Caballo:public Pieza
 {
 public:
     Caballo(QString team,QGraphicsItem *parent = nullptr);
-    //Agregar imagenes
-    void setImagen();
-    //Agregar movimientos
-    void movimientos();
+    void SetImagen();
+
+    void Movimientos();
+
 };
 
 #endif // CABALLO_H
